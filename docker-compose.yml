@@ -6,10 +6,9 @@ services:
     container_name: companydb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: mypassword
+      MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: companydb
-      MYSQL_USER: fazt
-      MYSQL_PASSWORD: faztpassword
+      MYSQL_USER: root
     ports:
       - 3306:3306
     volumes:

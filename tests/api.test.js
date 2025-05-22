@@ -1,7 +1,7 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('Health Check', () => {
-  it('should pass this dummy test', () => {
+  it('should pass a basic test', () => {
     assert.strictEqual(2 + 2, 4);
   });
 });
