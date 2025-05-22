@@ -1,6 +1,6 @@
 import request from "supertest";
-import app from "../src/app";
-import { pool } from "../src/db";
+import app from "../src/app.js";
+import { pool } from "../src/db.js";
 
 describe("Employees Routes", () => {
   it("should respond a list of employees", async () => {
