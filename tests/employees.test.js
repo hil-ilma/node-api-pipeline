@@ -49,7 +49,7 @@ describe("Employees Routes", () => {
     expect(res.statusCode).toEqual(204);
   });
 
-  afterAll(async () => {
+  after(async () => {
     await pool.end();
   });
 });
