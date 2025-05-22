@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import request from "supertest";
 import app from "../src/app.js";
 import { pool } from "../src/db.js";
