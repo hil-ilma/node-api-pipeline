@@ -6,16 +6,9 @@ import { pool } from "../src/db.js";
 describe("Employees Routes", () => {
   it("should respond a list of employees", async () => {
     const res = await request(app).get("/api/employees");
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.any(Number),
-          name: expect.any(String),
-          salary: expect.any(Number),
-        }),
-      ])
-    );
+    expect(res.statusCode).to.equal(200);
+    expect(res.body).to.be.an("array");
+    expect(res.body[0]).to.have.all.keys("id", "name", "salary");
   });
 
   it("should create a new employee", async () => {
@@ -23,31 +16,24 @@ describe("Employees Routes", () => {
       name: "John Doe",
       salary: 1000,
     });
-    expect(res.statusCode).toEqual(201);
-    expect(res.body).toEqual(
-      expect.objectContaining({
-        id: expect.any(Number),
-        name: "John Doe",
-        salary: 1000,
-      })
-    );
+    expect(res.statusCode).to.equal(201);
+    expect(res.body).to.include({
+      name: "John Doe",
+      salary: 1000,
+    });
+    expect(res.body).to.have.property("id").that.is.a("number");
   });
 
   it("should get an employee by id", async () => {
     const res = await request(app).get("/api/employees/1");
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toEqual(
-      expect.objectContaining({
-        id: 1,
-        name: expect.any(String),
-        salary: expect.any(Number),
-      })
-    );
+    expect(res.statusCode).to.equal(200);
+    expect(res.body).to.have.all.keys("id", "name", "salary");
+    expect(res.body.id).to.equal(1);
   });
 
   it("should delete an employee by id", async () => {
     const res = await request(app).delete("/api/employees/1");
-    expect(res.statusCode).toEqual(204);
+    expect(res.statusCode).to.equal(204);
   });
 
   after(async () => {
