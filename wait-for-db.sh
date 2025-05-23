@@ -1,11 +1,12 @@
 #!/bin/sh
-echo "Waiting for MySQL..."
 
-until nc -z -v -w30 $DB_HOST $DB_PORT
-do
-  echo "Waiting for database connection at $DB_HOST:$DB_PORT..."
+# Wait until the MySQL server is reachable
+echo "⏳ Waiting for MySQL at $DB_HOST:$DB_PORT..."
+
+until nc -z "$DB_HOST" "$DB_PORT"; do
+  >&2 echo "⏳ MySQL is unavailable - sleeping"
   sleep 2
 done
 
-echo "Database is up - executing app startup..."
+echo "✅ MySQL is up - executing command"
 exec "$@"
