@@ -1,45 +1,43 @@
 pipeline {
   agent any
 
+  environment {
+    CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN')
+  }
+
   stages {
+
     stage('Build') {
       steps {
         bat 'docker build -t node-api .'
       }
     }
 
-  stage('Test') {
-    steps {
-      // Cleanup before test to avoid container name conflicts
-      bat 'docker rm -f node-api || exit 0'
-      bat 'docker rm -f companydb || exit 0'
+    stage('Test & Coverage') {
+      steps {
+        bat '''
+          docker rm -f node-api || exit 0
+          docker rm -f companydb || exit 0
 
-      // Start services and run tests
-      bat 'docker-compose -f docker-compose.yml up -d --build'
-      bat 'docker exec node-api npm test || exit 0'
+          docker-compose -f docker-compose.yml up -d --build
+          docker exec node-api npm install --save-dev nyc
+          docker exec node-api npx nyc --reporter=lcov npm test
 
-      // Teardown
-      bat 'docker-compose down || exit 0'
+          docker cp node-api:/app/coverage/lcov.info coverage/lcov.info || exit 0
+
+          docker-compose down || exit 0
+        '''
+      }
     }
-  }
 
-stage('Code Quality') {
-  environment {
-    CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN')
-  }
-  steps {
-    bat '''
-      curl -Ls https://coverage.codacy.com/get.sh -o get-codacy.sh
-      bash get-codacy.sh
-    '''
-  }
-}
-
-
-
-
-
- 
+    stage('Code Quality') {
+      steps {
+        bat '''
+          curl -L -o codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/latest/download/codacy-coverage-reporter-assembly.jar
+          java -jar codacy-coverage-reporter-assembly.jar report -l JavaScript -r coverage/lcov.info
+        '''
+      }
+    }
 
     stage('Security Scan') {
       steps {
@@ -63,7 +61,6 @@ stage('Code Quality') {
         }
       }
     }
-
 
     stage('Monitoring') {
       steps {
