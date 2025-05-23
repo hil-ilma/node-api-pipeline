@@ -1,62 +1,85 @@
 pipeline {
   agent any
 
+  environment {
+    IMAGE_NAME = 'node-api'
+    CONTAINER_NAME = 'node-api'
+    DB_CONTAINER = 'companydb'
+    TAG = "v1.0-${env.BUILD_NUMBER}"
+  }
 
   stages {
-
     stage('Build') {
       steps {
-        sh 'docker build -t node-api .'
+        echo '🔧 Building Docker image...'
+        sh 'docker build --no-cache -t $IMAGE_NAME .'
       }
     }
 
-stage('Test') {
-  steps {
-    // Cleanup before test to avoid container name conflicts
-    sh 'docker rm -f node-api || exit 0'
-    sh 'docker rm -f companydb || exit 0'
+    stage('Test') {
+      steps {
+        echo '🧪 Starting Test Environment...'
+        sh 'docker rm -f $CONTAINER_NAME || true'
+        sh 'docker rm -f $DB_CONTAINER || true'
+        sh 'docker-compose -f docker-compose.yml up -d --build'
 
-    // Start services and run tests
-    sh 'docker-compose -f docker-compose.yml up -d --build'
-    sh 'docker exec node-api npm test || exit 0'
+        echo '🧪 Running Unit Tests...'
+        sh 'sleep 10' // Wait briefly for DB to initialize
+        sh 'docker exec $CONTAINER_NAME npm test || true'
 
-    // Teardown
-    sh 'docker-compose down || exit 0'
-  }
-}
-
-
-
-
+        echo '🧹 Shutting down test containers...'
+        sh 'docker-compose down || true'
+      }
+    }
 
     stage('Security Scan') {
       steps {
-        sh 'trivy image node-api || true'
+        echo '🔍 Running Trivy security scan...'
+        sh 'trivy image $IMAGE_NAME || true'
       }
     }
 
     stage('Deploy') {
       steps {
-        sh 'docker rm -f node-api || exit 0'
-        sh 'docker run -d -p 3000:3000 --name node-api --env DB_HOST=host.docker.internal --env DB_USER=root --env DB_PASSWORD=1234 --env DB_DATABASE=companydb --env PORT=3000 node-api'
+        echo '🚀 Deploying app container...'
+        sh 'docker rm -f $CONTAINER_NAME || true'
+        sh '''
+          docker run -d --name $CONTAINER_NAME \
+          -p 3000:3000 \
+          -e DB_HOST=host.docker.internal \
+          -e DB_USER=root \
+          -e DB_PASSWORD=1234 \
+          -e DB_DATABASE=companydb \
+          -e PORT=3000 \
+          $IMAGE_NAME
+        '''
       }
     }
 
     stage('Release') {
       steps {
-        script {
-          def tag = "v1.0-${env.BUILD_NUMBER}"
-          sh "git tag -a ${tag} -m \"Release ${tag}\""
-          sh "git push origin ${tag}"
-        }
+        echo "🏷️ Tagging release: ${env.TAG}"
+        sh "git config user.email 'jenkins@local' && git config user.name 'jenkins'"
+        sh "git tag -a ${TAG} -m 'Release ${TAG}' || true"
+        sh "git push origin ${TAG} || true"
       }
     }
 
     stage('Monitoring') {
       steps {
-        echo 'Showing container logs (last 10 lines):'
-        sh 'docker logs node-api --tail 10'
+        echo '📋 Displaying last 10 log lines:'
+        sh 'docker logs $CONTAINER_NAME --tail 10 || true'
       }
+    }
+  }
+
+  post {
+    failure {
+      echo '❌ Build failed. Cleaning up...'
+      sh 'docker-compose down || true'
+    }
+    success {
+      echo '✅ Build completed successfully.'
     }
   }
 }
