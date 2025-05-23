@@ -23,6 +23,11 @@ pipeline {
     }
   }
 
+    stage('Code Quality') {
+      steps {
+        bat 'bash -c "curl -Ls https://coverage.codacy.com/get.sh | bash"'
+      }
+    }
 
 
  
