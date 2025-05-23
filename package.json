@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "test": "nyc --reporter=lcov --report-dir=coverage mocha"
+    "test": "nyc --reporter=lcov mocha"
   },
   "keywords": [],
   "author": "",

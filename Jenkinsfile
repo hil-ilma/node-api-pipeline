@@ -20,10 +20,17 @@ pipeline {
         bat 'docker-compose -f docker-compose.yml up -d --build'
         bat 'ping -n 11 127.0.0.1 > nul'
         bat 'docker exec node-api npm test || exit 0'
-        bat 'docker cp node-api:/app/coverage/lcov.info coverage/lcov.info || exit 0' // Copy coverage from container to host
+        
+        // NEW: Ensure host directory exists
+        bat 'mkdir coverage || exit 0'
+
+        // Copy coverage file from container to host
+        bat 'docker cp node-api:/app/coverage/lcov.info coverage/lcov.info || exit 1'
+
         bat 'docker-compose down || exit 0'
       }
     }
+
 
     stage('Code Quality') {
       steps {
