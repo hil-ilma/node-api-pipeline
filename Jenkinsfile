@@ -42,10 +42,14 @@ pipeline {
 
     stage('Release') {
       steps {
-        bat 'git tag -a v1.0 -m "Release v1.0" || echo "Tag exists"'
-        bat 'git push origin v1.0 || echo "Already pushed"'
+        script {
+          def tag = "v1.0-${env.BUILD_NUMBER}"
+          bat "git tag -a ${tag} -m \"Release ${tag}\""
+          bat "git push origin ${tag}"
+        }
       }
     }
+
 
     stage('Monitoring') {
       steps {
