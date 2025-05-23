@@ -1,5 +1,6 @@
 import { config } from "dotenv";
-config();
+config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
+
 
 export const PORT = process.env.PORT || 3000;
 export const DB_HOST = process.env.DB_HOST || "db";

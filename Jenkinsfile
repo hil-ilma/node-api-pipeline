@@ -10,9 +10,7 @@ pipeline {
 
     stage('Test') {
       steps {
-        bat 'npm install'
-        bat 'ping -n 6 127.0.0.1 > nul'
-        bat 'npm test'
+        bat 'set NODE_ENV=test && ping -n 6 127.0.0.1 > nul && npm test'
       }
     }
 
@@ -29,17 +27,16 @@ pipeline {
     }
 
     stage('Deploy') {
-    steps {
+      steps {
         bat 'docker rm -f node-api || exit 0'
-        bat 'docker run -d -p 3000:3000 --name node-api --env DB_HOST=host.docker.internal --env DB_USER=root --env DB_PASSWORD=1234 --env DB_NAME=companydb node-api'
+        bat 'docker run -d -p 3000:3000 --name node-api --env DB_HOST=host.docker.internal --env DB_USER=root --env DB_PASSWORD=1234 --env DB_DATABASE=companydb --env PORT=3000 node-api'
+      }
     }
-    }
-
 
     stage('Release') {
       steps {
-        bat 'git tag -a v1.0 -m "Release v1.0"'
-        bat 'git push origin v1.0'
+        bat 'git tag -a v1.0 -m "Release v1.0" || echo "Tag exists"'
+        bat 'git push origin v1.0 || echo "Already pushed"'
       }
     }
 
