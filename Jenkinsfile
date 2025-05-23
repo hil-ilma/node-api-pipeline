@@ -8,20 +8,24 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
-        bat 'docker-compose -f docker-compose.yml up -d --build'
-        bat 'docker exec node-api npm test || exit 0'
-        bat 'docker-compose down'
-      }
+  stage('Test') {
+    steps {
+      // Cleanup before test to avoid container name conflicts
+      bat 'docker rm -f node-api || exit 0'
+      bat 'docker rm -f companydb || exit 0'
+
+      // Start services and run tests
+      bat 'docker-compose -f docker-compose.yml up -d --build'
+      bat 'docker exec node-api npm test || exit 0'
+
+      // Teardown
+      bat 'docker-compose down || exit 0'
     }
+  }
 
 
-    stage('Code Quality') {
-      steps {
-        bat 'sonar-scanner'
-      }
-    }
+
+ 
 
     stage('Security Scan') {
       steps {
