@@ -2,10 +2,11 @@ pipeline {
   agent any
 
   environment {
-    CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN') // Set in Jenkins credentials
+    CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN') 
   }
 
   stages {
+
     stage('Build') {
       steps {
         bat 'docker build -t node-api .'
@@ -17,7 +18,9 @@ pipeline {
         bat 'docker rm -f node-api || exit 0'
         bat 'docker rm -f companydb || exit 0'
         bat 'docker-compose -f docker-compose.yml up -d --build'
+        bat 'timeout /t 10' // Give DB time to initialize
         bat 'docker exec node-api npm test || exit 0'
+        bat 'docker cp node-api:/app/coverage/lcov.info coverage/lcov.info || exit 0' // Copy coverage from container to host
         bat 'docker-compose down || exit 0'
       }
     }
