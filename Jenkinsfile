@@ -10,23 +10,21 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
-        bat 'docker rm -f node-api || exit 0'
-        bat 'docker rm -f companydb || exit 0'
-        bat 'docker-compose -f docker-compose.yml up -d --build'
-        bat 'ping -n 11 127.0.0.1 > nul'
-        bat 'docker exec node-api npm test || exit 0'
-        
-        // NEW: Ensure host directory exists
-        bat 'mkdir coverage || exit 0'
+stage('Test') {
+  steps {
+    // Cleanup before test to avoid container name conflicts
+    bat 'docker rm -f node-api || exit 0'
+    bat 'docker rm -f companydb || exit 0'
 
-        // Copy coverage file from container to host
-        bat 'docker cp node-api:/app/coverage/lcov.info coverage/lcov.info || exit 1'
+    // Start services and run tests
+    bat 'docker-compose -f docker-compose.yml up -d --build'
+    bat 'docker exec node-api npm test || exit 0'
 
-        bat 'docker-compose down || exit 0'
-      }
-    }
+    // Teardown
+    bat 'docker-compose down || exit 0'
+  }
+}
+
 
 
 
