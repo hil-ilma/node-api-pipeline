@@ -1,9 +1,6 @@
 pipeline {
   agent any
 
-  environment {
-    CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN') 
-  }
 
   stages {
 
@@ -32,14 +29,7 @@ pipeline {
     }
 
 
-    stage('Code Quality') {
-      steps {
-        bat '''
-          curl -L -o codacy-coverage-reporter-assembly.jar https://github.com/codacy/codacy-coverage-reporter/releases/latest/download/codacy-coverage-reporter-assembly.jar
-          java -jar codacy-coverage-reporter-assembly.jar report -l JavaScript -r coverage/lcov.info
-        '''
-      }
-    }
+
 
     stage('Security Scan') {
       steps {
