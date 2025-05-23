@@ -23,15 +23,18 @@ pipeline {
     }
   }
 
-    stage('Code Quality') {
-      environment {
-        CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN')
-      }
-      steps {
-        bat 'curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.bat'
-        bat 'powershell codacy-coverage-reporter.bat'
-      }
-    }
+stage('Code Quality') {
+  environment {
+    CODACY_PROJECT_TOKEN = credentials('CODACY_PROJECT_TOKEN')
+  }
+  steps {
+    bat '''
+      curl -Ls https://coverage.codacy.com/get.sh -o get-codacy.sh
+      bash get-codacy.sh
+    '''
+  }
+}
+
 
 
 
