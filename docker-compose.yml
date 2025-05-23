@@ -15,6 +15,7 @@ services:
 
   node-api:
     build: .
+    command: ["./wait-for-db.sh"]
     container_name: node-api
     ports:
       - "3000:3000"

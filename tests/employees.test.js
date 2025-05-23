@@ -10,6 +10,12 @@ describe("Employees Routes", () => {
     expect(res.body).to.be.an("array");
     expect(res.body[0]).to.have.all.keys("id", "name", "salary");
   });
+before((done) => {
+  setTimeout(() => {
+    console.log("⏳ Waiting extra 2 seconds before tests to ensure DB is ready...");
+    done();
+  }, 2000); // Wait 2 seconds to ensure MySQL is ready
+});
 
   it("should create a new employee", async () => {
     const res = await request(app).post("/api/employees").send({

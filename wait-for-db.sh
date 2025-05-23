@@ -1,4 +1,5 @@
 #!/bin/sh
+chmod +x wait-for-db.sh
 
 # Wait until the MySQL server is reachable
 echo " Waiting for MySQL at $$DB_HOST:$$DB_PORT..."
