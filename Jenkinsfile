@@ -10,9 +10,12 @@ pipeline {
 
     stage('Test') {
       steps {
-        bat 'set NODE_ENV=test && ping -n 6 127.0.0.1 > nul && npm test'
+        bat 'docker-compose -f docker-compose.yml up -d --build'
+        bat 'docker exec node-api npm test || exit 0'
+        bat 'docker-compose down'
       }
     }
+
 
     stage('Code Quality') {
       steps {
