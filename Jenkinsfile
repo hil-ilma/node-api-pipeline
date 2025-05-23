@@ -17,7 +17,11 @@ pipeline {
     }
 
 
-
+    stage('Code Quality') {
+      steps {
+        bat 'sonar-scanner'
+      }
+    }
 
     stage('Security Scan') {
       steps {
